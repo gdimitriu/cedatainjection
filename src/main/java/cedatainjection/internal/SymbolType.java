@@ -17,26 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with cedatainjection.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cedatainjection.functions;
+package cedatainjection.internal;
 
 /**
+ * The type of symbol.
  * @author Gabriel Dimitriu
  *
  */
-public class FunctionsProvider {
-	
-	/**
-	 * 
-	 */
-	public FunctionsProvider() {
-		//TODO
-	}
-
-	public static boolean isValableFunction(final char[] function) {
-		return true;
-	}
-	
-	public static double evaluateFunction(final char[] function, final double argument) {
-		return 0.0;
-	}
+public enum SymbolType {
+	DELIMITATOR, VARIABLE, VARIABLE_MD, FUNCTION, NUMBER, NONE;
 }
