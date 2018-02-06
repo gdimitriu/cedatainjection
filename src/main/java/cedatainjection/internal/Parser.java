@@ -225,7 +225,7 @@ public class Parser {
 	 * @param function the function
 	 * @return value of the computation or 0.0 if the function doesn't exist
 	 */
-	private double evalMath(final char[] function) {
+	private double evalMathFunction(final char[] function) {
 		boolean valable = FunctionsProvider.isValableFunction(function);		
 		int possition = getArgument();
 		double rez = 0.0D;
@@ -239,9 +239,16 @@ public class Parser {
 		return FunctionsProvider.evaluateFunction(function, rez);		
 	}
 	
+	/**
+	 * Process the attribution of a variable.
+	 * @param argument the input value.
+	 * @return the result.
+	 */
 	private double evaluateVariable(final double argument) {
+		//get the next symbol
 		advanceSymbol();
 		char[] oldSymbol = null;
+		double rez = 0.0D;
 		SymbolType oldSymbolType = null;
 		if (symbolType == SymbolType.VARIABLE) {
 			//save the old symbol
@@ -256,14 +263,29 @@ public class Parser {
 				symbolLength = oldSymbol.length;
 				symbolType = oldSymbolType;
 			} else {
-				
+				//get the next symbol
+				advanceSymbol();
+				rez = evaluateAddMathExpression(rez);
+				variables.set(new String(oldSymbol), rez, 0);
+				return rez;
 			}
 		}
 		if (symbolType == SymbolType.VARIABLE_MD) {
 			//save the old symbol
 			oldSymbol = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
 			oldSymbolType = symbolType;
+			//TODO:
 		}
-		return 0.0D;
+		return evaluateAddMathExpression(rez);
+	}
+
+	/**
+	 * Process the add or difference of two elements.
+	 * @param argument the input value
+	 * @return result of operation
+	 */
+	private double evaluateAddMathExpression(final double argument) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
