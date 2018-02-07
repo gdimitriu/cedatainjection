@@ -19,7 +19,6 @@
  */
 package cedatainjection.internal;
 
-import cedatainjection.functions.FunctionsProvider;
 import cedatainjection.interfaces.IVariable;
 
 /**
@@ -226,7 +225,7 @@ public class Parser {
 	 * @return value of the computation or 0.0 if the function doesn't exist
 	 */
 	private double evalMathFunction(final char[] function) {
-		boolean valable = FunctionsProvider.isValableFunction(function);		
+		boolean valable = DefaultFunctionProvider.isValableDoubleArguementFunction(function);		
 		int possition = getArgument();
 		double rez = 0.0D;
 		//eval the function
@@ -236,7 +235,7 @@ public class Parser {
 		if (!valable) {
 			return 0.0D;
 		}
-		return FunctionsProvider.evaluateFunction(function, rez);		
+		return DefaultFunctionProvider.evaluateDoubleArgumentFunction(function, rez);		
 	}
 	
 	/**
