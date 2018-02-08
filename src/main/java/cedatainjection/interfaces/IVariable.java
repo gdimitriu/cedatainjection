@@ -36,20 +36,20 @@ public interface IVariable {
 	double get(final String variable);
 	
 	/**
-	 * Get the value of the vector variable by position. 
-	 * @param variable the name of variable.
-	 * @param position in the vector.
-	 * @return the scalar value of the variable.
-	 */
-	double get(final String variable, final int position);
-
-	/**
 	 * Set the value of the scalar variable into the memory.
 	 * This will add a new value or override the value.
 	 * @param variable the name of the variable.
 	 * @param value the new value of the variable to be set.
 	 */
 	void set(final String variable, final double value);
+	
+	/**
+	 * Get the value of the vector variable by position. 
+	 * @param variable the name of variable.
+	 * @param position in the vector.
+	 * @return the scalar value of the variable.
+	 */
+	double get(final String variable, final int position);
 	
 	/**
 	 * Set of value of the vector variable on the desired position.

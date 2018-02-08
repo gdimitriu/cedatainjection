@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class DefaultFunctionProvider {
 	
-	/** this hold all mathematical method with one argument */
+	/** this hold all mathematical method with one double argument */
 	private static Map<String, Method> functionsOneDoubleArgument = new HashMap<>();
 	
 	static {

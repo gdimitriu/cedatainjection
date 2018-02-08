@@ -52,7 +52,7 @@ public final class SymbolUtils {
 	 * @return true if is delimitator.
 	 */
 	static boolean isDelimitator(final char character) {
-		int index = "+-&.?%^=()[]".indexOf(character);
+		int index = "+-/*%^=()[]".indexOf(character);
 		if (index >= 0) {
 			return true;
 		} else {
@@ -68,8 +68,7 @@ public final class SymbolUtils {
 	 */
 	static char[] shrinkBuffer(final char[] source, final int length) {
 		char[] temp = new char[length];
-		//biger length to accomodate \0
-		for(int i = 0; i < length + 1; i++) {
+		for(int i = 0; i < length; i++) {
 			temp[i]=source[i];
 		}
 		return temp;

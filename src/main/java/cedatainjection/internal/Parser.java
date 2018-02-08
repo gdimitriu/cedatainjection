@@ -108,7 +108,7 @@ public class Parser {
 	 * Evaluate the expression.
 	 * @param expression
 	 */
-	public void evaluate(final String expression) {
+	public double evaluate(final String expression) {
 		this.expression = expression;
 		expressionBuffer = expression.toCharArray();
 		expressionPossition = 0;
@@ -116,6 +116,7 @@ public class Parser {
 		workingPosition  = 0;
 		symbolLength = 0;
 		symbolType = SymbolType.NONE;
+		return evaluateVariable();
 	}
 	
 	/**
@@ -173,41 +174,39 @@ public class Parser {
 			symbolValue[symbolLength] = workingBuffer[workingPosition];
 			workingPosition++;
 			symbolLength++;
-		} else if (Character.isLetter(workingBuffer[workingPosition]) && workingBuffer[workingPosition +1 ] == '[') {
-			while(!SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
+		} else if (Character.isLetter(workingBuffer[workingPosition]) && workingBuffer.length > (workingPosition +1) && workingBuffer[workingPosition +1 ] == '[') {
+			while(workingPosition < workingBuffer.length && !SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
 				//copy data
 				symbolValue[symbolLength] = workingBuffer[workingPosition];
 				workingPosition++;
 				symbolLength++;
-				workingPosition++;
 			}			
 			symbolType = SymbolType.VARIABLE_MD; 
-		} else if(Character.isLetter(workingBuffer[workingPosition]) && Character.isLetter(workingBuffer[workingPosition + 1])) {
-			while(!SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
+		} else if(Character.isLetter(workingBuffer[workingPosition]) ||
+				(Character.isLetter(workingBuffer[workingPosition]) && workingBuffer.length > (workingPosition +1) && Character.isLetter(workingBuffer[workingPosition + 1]))) {
+			while(workingPosition < workingBuffer.length && !SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
 				//copy data
 				symbolValue[symbolLength] = workingBuffer[workingPosition];
 				workingPosition++;
 				symbolLength++;
-				workingPosition++;
 			}
-			if (workingBuffer[workingPosition] == '(') {
+			if (workingPosition < workingBuffer.length && workingBuffer[workingPosition] == '(') {
 				symbolType = SymbolType.FUNCTION;
-			} else if(workingBuffer[workingPosition] == '[') {
+			} else if(workingPosition < workingBuffer.length && workingBuffer[workingPosition] == '[') {
 				symbolType = SymbolType.VARIABLE_MD;
 			} else {
 				symbolType = SymbolType.VARIABLE;
 			}
 		} else if(Character.isDigit(workingBuffer[workingPosition])) {
-			while(!SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
+			while(workingPosition < workingBuffer.length &&  !SymbolUtils.isDelimitator(workingBuffer[workingPosition])) {
 				//copy data
 				symbolValue[symbolLength] = workingBuffer[workingPosition];
 				workingPosition++;
 				symbolLength++;
-				workingPosition++;
 			}
 			symbolType = SymbolType.NUMBER;
 		}
-		symbolValue[symbolLength] = '\0';
+		symbolValue = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
 	}
 	
 	/**
@@ -226,12 +225,12 @@ public class Parser {
 	 */
 	private double evalMathFunction(final char[] function) {
 		boolean valable = DefaultFunctionProvider.isValableDoubleArguementFunction(function);		
-		int possition = getArgument();
+		int position = getArgument();
 		double rez = 0.0D;
 		//eval the function
-		rez = evaluateVariable(rez);
+		rez = evaluateVariable();
 		workingBuffer = expressionBuffer;
-		workingPosition = possition;
+		workingPosition = position;
 		if (!valable) {
 			return 0.0D;
 		}
@@ -240,10 +239,9 @@ public class Parser {
 	
 	/**
 	 * Process the attribution of a variable.
-	 * @param argument the input value.
 	 * @return the result.
 	 */
-	private double evaluateVariable(final double argument) {
+	private double evaluateVariable() {
 		//get the next symbol
 		advanceSymbol();
 		char[] oldSymbol = null;
@@ -255,7 +253,7 @@ public class Parser {
 			oldSymbolType = symbolType;
 			//advance
 			advanceSymbol();
-			if(symbolValue.length > 0 && symbolValue[0] != '=') {
+			if(symbolLength > 0 && symbolValue[0] != '=') {
 				//restore the symbol
 				putBack();
 				symbolValue = oldSymbol;
@@ -264,8 +262,8 @@ public class Parser {
 			} else {
 				//get the next symbol
 				advanceSymbol();
-				rez = evaluateAddMathExpression(rez);
-				variables.set(new String(oldSymbol), rez, 0);
+				rez = evaluateAddMathExpression();
+				variables.set(new String(oldSymbol), rez);
 				return rez;
 			}
 		}
@@ -275,16 +273,170 @@ public class Parser {
 			oldSymbolType = symbolType;
 			//TODO:
 		}
-		return evaluateAddMathExpression(rez);
+		return evaluateAddMathExpression();
 	}
 
 	/**
 	 * Process the add or difference of two elements.
-	 * @param argument the input value
 	 * @return result of operation
 	 */
-	private double evaluateAddMathExpression(final double argument) {
-		// TODO Auto-generated method stub
-		return 0;
+	private double evaluateAddMathExpression() {		
+		double rez = evaluateMultiplyMathExpression();
+		double temp;
+		if (symbolLength == 0) {
+			return rez;
+		}
+		char operand = symbolValue[0];
+		while(symbolLength == 1 && (symbolValue[0] == '+' || symbolValue[0] == '-')) {
+			advanceSymbol();
+			temp = evaluateMultiplyMathExpression();
+			if (operand == '-') {
+				rez = rez - temp;
+			} else if (operand == '+') {
+				rez = rez + temp;
+			}
+			operand = symbolValue[0];
+		}
+		return rez;
 	}
+	
+	/**
+	 * Process the multiply or division of two elements.
+	 * @return result of operation
+	 */
+	private double evaluateMultiplyMathExpression() {
+		double rez = evaluateExponentMathExpression();
+		if (symbolLength == 0) {
+			return rez;
+		}
+		char operator = symbolValue[0];
+		while(operator == '*' || operator == '/' || operator == '%') {
+			advanceSymbol();
+			double temp = evaluateExponentMathExpression();
+			switch (operator) {
+			case '*':
+				rez = rez * temp;
+				break;
+			case '/':
+				rez = rez / temp;
+				break;
+			case '%':
+				rez = (long) rez % (long) temp;
+				break;
+			}
+			if (symbolLength > 0) {
+				operator = symbolValue[0];
+			} else {
+				return rez;
+			}
+		}
+		return rez;
+	}
+	
+	/**
+	 * Process the exponent.
+	 * @return result of operation
+	 */
+	private double evaluateExponentMathExpression() {
+		double rez = evaluateUnaryMathExpression();
+		if (symbolLength > 0 && symbolValue[0] == '^') {
+			advanceSymbol();
+			double temp = evaluateExponentMathExpression();
+			rez = Math.pow(rez, temp);
+		}
+		return rez;
+	}
+	
+	/**
+	 * Process the unary operation.
+	 * @return result of operation
+	 */
+	private double evaluateUnaryMathExpression() {
+		char operator = 0;
+		if (symbolType == SymbolType.DELIMITATOR && (symbolValue[0] == '-' || symbolValue[0] =='+')) {
+			operator = symbolValue[0];
+			advanceSymbol();
+		}
+		double rez = evaluateParenthesesExpression();
+		if(operator == '-') {
+			return -rez;
+		}
+		return rez;
+	}
+	
+	/**
+	 * Process the parentheses operation.
+	 * @return result of operation
+	 */
+	private double evaluateParenthesesExpression() {
+		if (symbolLength > 0 && symbolValue[0] == '(') {
+			advanceSymbol();
+			double rez = evaluateAddMathExpression();
+			if (symbolLength > 0 && symbolValue[0] != ')') {
+				System.err.println("invalid expresion missing )");
+			}
+			advanceSymbol();
+			return rez;
+		} else {
+			return evaluateAtomExpression();
+		}
+	}
+	
+	/**
+	 * Process the atom operation.
+	 * @return result of operation
+	 */
+	private double evaluateAtomExpression() {
+		double rez = 0.0;
+		switch (symbolType) {
+		case VARIABLE:
+			rez = getVariable(symbolValue);
+			advanceSymbol();
+			return rez;
+		case NUMBER:
+			rez  = Double.parseDouble(new String(symbolValue));
+			advanceSymbol();
+			return rez;
+		case FUNCTION:
+			rez = evalMathFunction(symbolValue);
+			advanceSymbol();
+			return rez;
+		case VARIABLE_MD:
+			rez = getVariableMD(symbolValue);
+			advanceSymbol();
+			return rez;
+		default:
+			break;
+		}
+		return rez;
+	}
+	
+	/**
+	 * Get the multidimensional variable.
+	 * @param variableName name
+	 * @return value of the variable
+	 */
+	private double getVariableMD(final char[] variableName) {
+		char[] symbolName = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
+		int position = getArgument();
+		//evaluate the variable
+		double rez = evaluateVariable();
+		workingBuffer = expressionBuffer;
+		workingPosition = position;
+		return variables.get(new String(symbolName), (int) rez);
+	}
+	
+	/**
+	 * Get the scalar variable from memory.
+	 * @param variableName of the variable
+	 * @return value of the variable.
+	 */
+	private double getVariable(final char[] variableName) {
+		if (!Character.isAlphabetic(variableName[0])) {
+			System.err.println("variable did not start with leter");
+			return 0.0D;
+		}
+		return variables.get(new String(variableName));
+	}
+	
 }

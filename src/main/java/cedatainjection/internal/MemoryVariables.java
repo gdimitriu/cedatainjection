@@ -19,6 +19,9 @@
  */
 package cedatainjection.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import cedatainjection.interfaces.IVariable;
 
 /**
@@ -26,13 +29,64 @@ import cedatainjection.interfaces.IVariable;
  * @author Gabriel Dimitriu
  *
  */
-public abstract class MemoryVariables implements IVariable{
+public class MemoryVariables implements IVariable{
+	
+	private Map<String, Double> scalarVariable = new HashMap<>();
 
 	/**
 	 * 
 	 */
 	public MemoryVariables() {
 		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public double get(final String variable) {
+		if (scalarVariable.containsKey(variable)) {
+			return scalarVariable.get(variable);
+		}
+		return 0.0D;
+	}
+	
+	@Override
+	public void set(final String variable, final double value) {
+		scalarVariable.put(variable, value);
+	}
+
+	@Override
+	public double get(String variable, int position) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void set(String variable, double value, int position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void insert(String variable, double value, int position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void delete(final String variable) {
+		if (scalarVariable.containsKey(variable)) {
+			scalarVariable.remove(variable);
+		}
+	}
+
+	@Override
+	public void delete(String variable, int position) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void clear() {
+		scalarVariable.clear();
 	}
 
 }
