@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with cedatainjection.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cedatainjection.tests;
+package cedatainjection.tests.parser;
 
 import static org.junit.Assert.*;
 
@@ -28,13 +28,14 @@ import cedatainjection.internal.MemoryVariables;
 import cedatainjection.internal.Parser;
 
 /**
+ * Functional Unitests for evaluations.
  * @author Gabriel Dimitriu
  *
  */
 public class ParserTests {
 
 	@Test
-	public void basicTests() {
+	public void basicScalarTests() {
 		IVariable memory = new MemoryVariables();
 		Parser parser = new Parser(memory);
 		double rez = parser.evaluate("a=10");
@@ -58,5 +59,30 @@ public class ParserTests {
 		rez = parser.evaluate("d/b");
 		assertTrue(rez == 11.0D);
 	}
+	
+	@Test
+	public void basicVectorTests() {
+		IVariable memory = new MemoryVariables();
+		Parser parser = new Parser(memory);
+		double rez = parser.evaluate("a[0]=10");
+		assertTrue(rez == 10.0D);
+		assertTrue(memory.get("a", 0) == 10.0D);
+		rez = parser.evaluate("a[1]=a[0]+10");
+		assertTrue(rez == 20.0D);
+		assertTrue(memory.get("a", 0) == 10.0D);
+		assertTrue(memory.get("a", 1) == 20.0D);
+		rez = parser.evaluate("b[2]= a[1] + 1");
+		assertTrue(rez == 21.0D);
+		assertTrue(memory.get("a", 0) == 10.0D);
+		assertTrue(memory.get("a", 1) == 20.0D);
+		assertTrue(memory.get("b", 2) == 21.0D);
+	}
 
+	@Test
+	public void basicMathTests() {
+		IVariable memory = new MemoryVariables();
+		Parser parser = new Parser(memory);
+		double rez = parser.evaluate("sin(0.3)^2 + cos(0.3)^2");
+		assertTrue("evaluate trigonometric identity", rez == 1.0D);
+	}
 }

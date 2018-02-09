@@ -19,7 +19,9 @@
  */
 package cedatainjection.internal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cedatainjection.interfaces.IVariable;
@@ -31,7 +33,11 @@ import cedatainjection.interfaces.IVariable;
  */
 public class MemoryVariables implements IVariable{
 	
+	/** memory for scalar variable */
 	private Map<String, Double> scalarVariable = new HashMap<>();
+	
+	/** memory for vector variable */
+	private Map<String, List<Double>> vectorVariable = new HashMap<>();
 
 	/**
 	 * 
@@ -55,20 +61,40 @@ public class MemoryVariables implements IVariable{
 
 	@Override
 	public double get(String variable, int position) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (vectorVariable.containsKey(variable)) {
+			return vectorVariable.get(variable).get(position);
+		}
+		return 0.0D;
 	}
 
 	@Override
 	public void set(String variable, double value, int position) {
-		// TODO Auto-generated method stub
-		
+		if (vectorVariable.containsKey(variable)) {
+			List<Double> array = vectorVariable.get(variable); 
+			if (array.size() > position) {
+				array.set(position, value);
+			} else {
+				array.add(position, value);
+			}
+		} else {
+			List<Double> array = new ArrayList<>();
+			for (int i = 0 ; i < position; i++) {
+				array.add(0.0D);
+			}
+			array.add(position, value);
+			vectorVariable.put(variable, array);
+		}
 	}
 
 	@Override
 	public void insert(String variable, double value, int position) {
-		// TODO Auto-generated method stub
-		
+		if (vectorVariable.containsKey(variable)) {
+			vectorVariable.get(variable).add(position, value);
+		} else {
+			List<Double> array = new ArrayList<>();
+			array.add(position, value);
+			vectorVariable.put(variable, array);
+		}
 	}
 
 	@Override
@@ -76,17 +102,27 @@ public class MemoryVariables implements IVariable{
 		if (scalarVariable.containsKey(variable)) {
 			scalarVariable.remove(variable);
 		}
+		if (vectorVariable.containsKey(variable)) {
+			vectorVariable.remove(variable);
+		}
 	}
 
 	@Override
 	public void delete(String variable, int position) {
-		// TODO Auto-generated method stub
-		
+		if (vectorVariable.containsKey(variable)) {
+			List<Double> array = vectorVariable.get(variable); 
+			if(array.size() > position) {
+				array.set(position, 0.0D);
+			} else if (array.size() - 1  == position) {
+				array.remove(position);
+			}
+		}
 	}
 
 	@Override
 	public void clear() {
 		scalarVariable.clear();
+		vectorVariable.clear();
 	}
 
 }

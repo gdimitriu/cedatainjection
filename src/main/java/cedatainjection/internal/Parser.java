@@ -4,6 +4,11 @@
 
     This file is part of cedatainjection project.
 
+	This parser is a modified version of the parser from Schild "C the 
+	Complete Reference" Copyright 1995 McGraw-Hill Cook Company International.
+	
+	This parser is also a translation from C++ of my old parser_functions.
+	
     cedatainjection is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -142,11 +147,42 @@ public class Parser {
 			i++;
 			workingPosition++;
 		}
-		work[i]='\0';
 		workingPosition++;
 		work = SymbolUtils.shrinkBuffer(work, i);
 		expressionPossition = workingPosition;
 		workingBuffer = work;
+		workingPosition = 0;
+		return expressionPossition;
+	}
+	
+	/**
+	 * Get the argument of expression.
+	 * @return position into the expression bufffer. 
+	 */
+	private int getArgument_varMD() {
+		char[] work = new char[workingBuffer.length];
+		workingPosition++;
+		int i =0;
+		int parantheses = 1;
+		while (parantheses != 0) {
+			if(workingBuffer[workingPosition] == '[') {
+				parantheses++;
+			}
+			if (workingBuffer[workingPosition] == ']') {
+				parantheses--;
+			}
+			if(parantheses == 0) {
+				break;
+			}
+			work[i]=workingBuffer[workingPosition];
+			i++;
+			workingPosition++;
+		}
+		workingPosition++;
+		work = SymbolUtils.shrinkBuffer(work, i);
+		expressionPossition = workingPosition;
+		workingBuffer = work;
+		workingPosition = 0;
 		return expressionPossition;
 	}
 	
@@ -227,7 +263,7 @@ public class Parser {
 		boolean valable = DefaultFunctionProvider.isValableDoubleArguementFunction(function);		
 		int position = getArgument();
 		double rez = 0.0D;
-		//eval the function
+		//evaluation of the function
 		rez = evaluateVariable();
 		workingBuffer = expressionBuffer;
 		workingPosition = position;
@@ -271,7 +307,26 @@ public class Parser {
 			//save the old symbol
 			oldSymbol = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
 			oldSymbolType = symbolType;
-			//TODO:
+			//computing the index of the variable
+			String symbolName = new String(symbolValue);
+			int position = getArgument_varMD();
+			//evaluate the variable
+			int pos = (int) evaluateVariable();
+			workingBuffer = expressionBuffer;
+			workingPosition = position;
+			advanceSymbol();
+			if(symbolLength > 0 && symbolValue[0] != '=') {
+				//restore the symbol
+				putBack();
+				symbolValue = oldSymbol;
+				symbolLength = oldSymbol.length;
+				symbolType = oldSymbolType;
+			} else {
+				advanceSymbol();
+				rez = evaluateAddMathExpression();
+				variables.set(symbolName, rez, pos);
+				return rez;
+			}
 		}
 		return evaluateAddMathExpression();
 	}
@@ -418,7 +473,7 @@ public class Parser {
 	 */
 	private double getVariableMD(final char[] variableName) {
 		char[] symbolName = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
-		int position = getArgument();
+		int position = getArgument_varMD();
 		//evaluate the variable
 		double rez = evaluateVariable();
 		workingBuffer = expressionBuffer;

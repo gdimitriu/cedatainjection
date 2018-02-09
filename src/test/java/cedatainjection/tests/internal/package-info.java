@@ -21,4 +21,4 @@
  * @author Gabriel Dimitriu
  *
  */
-package cedatainjection.internal.tests;
+package cedatainjection.tests.internal;
