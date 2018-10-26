@@ -85,4 +85,23 @@ public interface IVariable {
 	 * Clear the entire variable stack.
 	 */
 	void clear();
+	
+	/**
+	 * Get the value of the matrix variable by position. 
+	 * @param variable the name of variable.
+	 * @param xPosition the x index in the matrix.
+	 * @param yPosition the y index in the matrix.
+	 * @return the scalar value of the variable.
+	 */
+	double get(final String variable, final int xPosition, final int yPosition);
+	
+	/**
+	 * Set of value of the matrix variable on the desired position.
+	 * This will add a new value or override the value.
+	 * @param variable the name of the variable.
+	 * @param value the new value of the variable.
+	 * @param xPosition the x index in the  matrix.
+	 * @param yPosition the y index in the matrix.
+	 */
+	void set(final String variable, final double value, final int xPosition, final int yPosition);
 }

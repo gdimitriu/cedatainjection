@@ -74,4 +74,27 @@ public class MemoryVariableTests {
 		assertTrue(memory.get("b") == 0.0D);
 	}
 
+	@Test
+	public void matrixVariableTest() {
+		IVariable memory = new MemoryVariables();
+		double expectedValue = 3.9D;
+		double expectedSecondValue = 10.9D;
+		double value;
+		double delta = 0.01D;
+		memory.set("a", expectedValue, 2, 3);
+		value = memory.get("a", 2, 3);
+		assertEquals(expectedValue, value, delta);
+		memory.set("b", expectedSecondValue, 2, 3);
+		value = memory.get("b", 2, 3);
+		assertEquals(expectedSecondValue, value, delta);
+		
+		memory.delete("a");
+		value = memory.get("a", 2, 3);
+		assertEquals(0.0D, value, delta);
+		value = memory.get("b", 2, 3);
+		assertEquals(expectedSecondValue, value, delta);
+		memory.delete("b");
+		value = memory.get("b", 2, 3);
+		assertEquals(0.0D, value, delta);
+	}
 }

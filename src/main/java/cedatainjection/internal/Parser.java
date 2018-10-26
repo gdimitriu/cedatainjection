@@ -24,6 +24,9 @@
  */
 package cedatainjection.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cedatainjection.interfaces.IVariable;
 
 /**
@@ -309,11 +312,14 @@ public class Parser {
 			oldSymbolType = symbolType;
 			//computing the index of the variable
 			String symbolName = new String(symbolValue);
-			int position = getArgument_varMD();
-			//evaluate the variable
-			int pos = (int) evaluateVariable();
-			workingBuffer = expressionBuffer;
-			workingPosition = position;
+			List<Integer> arguments = new ArrayList<>();
+			while((workingBuffer.length > workingPosition) && workingBuffer[workingPosition] == '[') {
+				int position = getArgument_varMD();
+				//evaluate the variable
+				arguments.add((int) evaluateVariable());
+				workingBuffer = expressionBuffer;
+				workingPosition = position;
+			}	
 			advanceSymbol();
 			if(symbolLength > 0 && symbolValue[0] != '=') {
 				//restore the symbol
@@ -324,7 +330,11 @@ public class Parser {
 			} else {
 				advanceSymbol();
 				rez = evaluateAddMathExpression();
-				variables.set(symbolName, rez, pos);
+				if (arguments.size() == 1) {
+					variables.set(symbolName, rez, arguments.get(0));
+				} else if (arguments.size() == 2) {
+					variables.set(symbolName, rez, arguments.get(0), arguments.get(1));
+				}
 				return rez;
 			}
 		}
@@ -473,12 +483,20 @@ public class Parser {
 	 */
 	private double getVariableMD(final char[] variableName) {
 		char[] symbolName = SymbolUtils.shrinkBuffer(symbolValue, symbolLength);
-		int position = getArgument_varMD();
-		//evaluate the variable
-		double rez = evaluateVariable();
-		workingBuffer = expressionBuffer;
-		workingPosition = position;
-		return variables.get(new String(symbolName), (int) rez);
+		List<Integer> arguments = new ArrayList<>();
+		while((workingBuffer.length > workingPosition) && workingBuffer[workingPosition] == '[') {
+			int position = getArgument_varMD();
+			//evaluate the variable
+			arguments.add((int) evaluateVariable());
+			workingBuffer = expressionBuffer;
+			workingPosition = position;
+		}		
+		if (arguments.size() == 1) {
+			return variables.get(new String(symbolName), arguments.get(0));
+		} else if (arguments.size() == 2){
+			return variables.get(new String(symbolName), arguments.get(0), arguments.get(1));
+		}
+		return 0.0D;
 	}
 	
 	/**

@@ -17,19 +17,31 @@
     You should have received a copy of the GNU General Public License
     along with cedatainjection.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cedatainjection.tests;
+package cedatainjection.tests.manual;
+
+import cedatainjection.interfaces.IVariable;
+import cedatainjection.internal.MemoryVariables;
+import cedatainjection.internal.Parser;
+
 /**
+ * Functional Unitests for evaluations.
  * @author Gabriel Dimitriu
+ *
  */
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+public class ParserTests {
 
-@RunWith(Suite.class)
-@SuiteClasses({ cedatainjection.tests.parser.ParserTests.class, 
-	cedatainjection.tests.internal.FunctionsTests.class,
-	cedatainjection.tests.internal.MemoryVariableTests.class,
-	cedatainjection.tests.internal.MemoryMatrixTest.class})
-public class AllTests {
-
+	
+	public static void main(String[] args) {
+		IVariable memory = new MemoryVariables();
+		Parser parser = new Parser(memory);
+		double rez = parser.evaluate("b[1]=12");
+		rez = memory.get("b", 1);
+		System.out.println(rez);
+		rez = parser.evaluate("b[1]=b[1]+1");
+		rez = memory.get("b", 1);
+		System.out.println(rez);
+		rez = parser.evaluate("a[1][1]=112");
+		rez = memory.get("a", 1, 1);
+		System.out.println(rez);
+	}
 }

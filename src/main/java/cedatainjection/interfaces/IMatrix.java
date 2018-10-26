@@ -17,19 +17,38 @@
     You should have received a copy of the GNU General Public License
     along with cedatainjection.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cedatainjection.tests;
+package cedatainjection.interfaces;
+
+import java.util.Vector;
+
 /**
+ * Interface for Matrix operations and matrix storage.
  * @author Gabriel Dimitriu
+ *
  */
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
-@RunWith(Suite.class)
-@SuiteClasses({ cedatainjection.tests.parser.ParserTests.class, 
-	cedatainjection.tests.internal.FunctionsTests.class,
-	cedatainjection.tests.internal.MemoryVariableTests.class,
-	cedatainjection.tests.internal.MemoryMatrixTest.class})
-public class AllTests {
-
+public interface IMatrix {
+	
+	/**
+	 * Set a scalar value to the corresponding row and column.
+	 * @param value to be set
+	 * @param row the row
+	 * @param column the column.
+	 */
+	void set(final double value, final int row, final int column);
+	
+	/**
+	 * Get the scalar value from matrix.
+	 * @param row the row number
+	 * @param column the column number
+	 * @return scalar value
+	 */
+	double get(final int row, final int column);
+	
+	
+	/**
+	 * Get a row
+	 * @param row to be  retrieved
+	 * @return Vector<Double> represent the row
+	 */
+	Vector<Double> getRow(final int row);
 }

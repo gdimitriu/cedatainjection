@@ -19,11 +19,11 @@
  */
 package cedatainjection.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
+import cedatainjection.interfaces.IMatrix;
 import cedatainjection.interfaces.IVariable;
 
 /**
@@ -37,7 +37,10 @@ public class MemoryVariables implements IVariable{
 	private Map<String, Double> scalarVariable = new HashMap<>();
 	
 	/** memory for vector variable */
-	private Map<String, List<Double>> vectorVariable = new HashMap<>();
+	private Map<String, Vector<Double>> vectorVariable = new HashMap<>();
+	
+	/** memory for matrix variable */
+	private Map<String, IMatrix> matrixVariable = new HashMap<>();
 
 	/**
 	 * 
@@ -70,14 +73,14 @@ public class MemoryVariables implements IVariable{
 	@Override
 	public void set(String variable, double value, int position) {
 		if (vectorVariable.containsKey(variable)) {
-			List<Double> array = vectorVariable.get(variable); 
+			Vector<Double> array = vectorVariable.get(variable); 
 			if (array.size() > position) {
 				array.set(position, value);
 			} else {
 				array.add(position, value);
 			}
 		} else {
-			List<Double> array = new ArrayList<>();
+			Vector<Double> array = new Vector<>();
 			for (int i = 0 ; i < position; i++) {
 				array.add(0.0D);
 			}
@@ -91,7 +94,7 @@ public class MemoryVariables implements IVariable{
 		if (vectorVariable.containsKey(variable)) {
 			vectorVariable.get(variable).add(position, value);
 		} else {
-			List<Double> array = new ArrayList<>();
+			Vector<Double> array = new Vector<>();
 			array.add(position, value);
 			vectorVariable.put(variable, array);
 		}
@@ -101,16 +104,21 @@ public class MemoryVariables implements IVariable{
 	public void delete(final String variable) {
 		if (scalarVariable.containsKey(variable)) {
 			scalarVariable.remove(variable);
+			return;
 		}
 		if (vectorVariable.containsKey(variable)) {
 			vectorVariable.remove(variable);
+			return;
+		}
+		if (matrixVariable.containsKey(variable)) {
+			matrixVariable.remove(variable);
 		}
 	}
 
 	@Override
 	public void delete(String variable, int position) {
 		if (vectorVariable.containsKey(variable)) {
-			List<Double> array = vectorVariable.get(variable); 
+			Vector<Double> array = vectorVariable.get(variable); 
 			if(array.size() > position) {
 				array.set(position, 0.0D);
 			} else if (array.size() - 1  == position) {
@@ -123,6 +131,25 @@ public class MemoryVariables implements IVariable{
 	public void clear() {
 		scalarVariable.clear();
 		vectorVariable.clear();
+		matrixVariable.clear();
 	}
 
+	@Override
+	public double get(final String variable, final int xPosition, final int yPosition) {
+		if (matrixVariable.containsKey(variable)) {
+			return matrixVariable.get(variable).get(xPosition, yPosition);
+		}
+		return 0.0D;
+	}
+
+	@Override
+	public void set(final String variable, final double value, final int xPosition, final int yPosition) {
+		if (matrixVariable.containsKey(variable)) {
+			matrixVariable.get(variable).set(value, xPosition, yPosition);
+			return;
+		}
+		IMatrix newMatrix = new MemoryMatrix(xPosition, yPosition);
+		newMatrix.set(value, xPosition, yPosition);
+		matrixVariable.put(variable, newMatrix);
+	}
 }

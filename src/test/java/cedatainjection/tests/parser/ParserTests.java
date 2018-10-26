@@ -85,4 +85,17 @@ public class ParserTests {
 		double rez = parser.evaluate("sin(0.3)^2 + cos(0.3)^2");
 		assertTrue("evaluate trigonometric identity", rez == 1.0D);
 	}
+	
+	@Test
+	public void basicMatrixTests() {
+		IVariable memory = new MemoryVariables();
+		Parser parser = new Parser(memory);
+		double delta = 0.01D;
+		double rez = parser.evaluate("a[1][1]=112.23");
+		rez = memory.get("a", 1, 1);
+		assertEquals(112.23D, rez, delta);
+		rez = parser.evaluate("a[0][1]=a[1][1]+2");
+		rez = memory.get("a", 0, 1);
+		assertEquals(114.23D, rez, delta);
+	}
 }
